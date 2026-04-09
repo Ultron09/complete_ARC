@@ -50,10 +50,10 @@ Geospatial trail mapping with total offline resilience.
 
 ---
 
-## 🛠️ THE HARDENED TECH STACK
-- **Core Mobile**: React Native / Expo.
-- **Vision**: ML Kit (Sovereign).
-- **Intelligence Hub**: Anthropic Claude (Auxiliary/Pulse).
-- **Communication**: JWT + SSL (Hardened).
+## ⚙️ V. TECHNICAL REGISTRY
+- **Package Intelligence**: `com.airborne.arc`
+- **Sovereign SDK**: 36 (Android 16 Platform Readiness)
+- **Encryption Algorithm**: AES-256 (Vault-level)
 
 🦾🛡️📍🧍🎙️🔐💎🎯 **A.R.C. SENTINEL: SOVEREIGNTY BY DESIGN. INTELLIGENCE BY CHOICE.**
+
