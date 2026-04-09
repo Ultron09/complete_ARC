@@ -1,0 +1,6 @@
+[submodule "arc-backend"]
+	path = arc-backend
+	url = https://github.com/Ultron09/A.R.C.git
+[submodule "arc-mobile"]
+	path = arc-mobile
+	url = https://github.com/Ultron09/A.R.C-Mobile.git
