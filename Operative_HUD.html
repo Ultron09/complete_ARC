@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A.R.C. OPERATIVE HUD // DECRYPTION PROTOCOL</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root { --neon: #00C060; --bg: #000; --panel: #060606; --border: #111; }
+        body { background: var(--bg); color: #fff; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 40px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 40px; }
+        h1 { margin: 0; font-size: 24px; letter-spacing: 2px; }
+        .auth-panel { background: var(--panel); border: 1px solid var(--border); padding: 40px; border-radius: 4px; text-align: center; }
+        input { background: #000; border: 1px solid var(--border); color: var(--neon); padding: 15px; width: 300px; margin-bottom: 20px; font-family: inherit; }
+        textarea { background: #000; border: 1px solid var(--border); color: #555; padding: 15px; width: 100%; height: 100px; font-family: inherit; margin-bottom: 20px; }
+        button { background: var(--neon); color: #000; border: none; padding: 15px 40px; font-weight: bold; cursor: pointer; letter-spacing: 1px; }
+        .dashboard { display: none; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .card { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 2px; }
+        .label { color: #333; font-size: 10px; margin-bottom: 10px; }
+        .value { font-size: 32px; font-weight: bold; color: var(--neon); }
+        canvas { margin-top: 20px; }
+        .log-list { margin-top: 20px; font-size: 12px; }
+        .log-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #0A0A0A; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>A.R.C. // OPERATIVE INTEL HUD</h1>
+                <div style="font-size: 10px; color: #333; margin-top: 5px;">SOVEREIGN DATA VISUALIZATION SUITE v1.0.0</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 10px; color: var(--neon);">SYSTEM: ENCRYPTED</div>
+                <div style="font-size: 10px; color: #222;">STATUS: OFF-LINE READY</div>
+            </div>
+        </div>
+
+        <div id="login" class="auth-panel">
+            <div style="color: #444; font-size: 10px; margin-bottom: 30px;">PASTE ENCRYPTED TELEMETRY STRING</div>
+            <textarea id="cipherInput" placeholder="U2FsdGVkX1..."></textarea>
+            <br>
+            <input type="password" id="passInput" placeholder="OPERATIVE PASSPHRASE">
+            <br>
+            <button onclick="decryptAndInit()">INITIATE DECRYPTION</button>
+        </div>
+
+        <div id="dashboard" class="dashboard">
+            <div class="grid">
+                <div class="card">
+                    <div class="label">MISSION DURATION (LOGGED)</div>
+                    <div id="totalSets" class="value">--</div>
+                    <canvas id="volumeChart"></canvas>
+                </div>
+                <div class="card">
+                    <div class="label">BIOMETRIC ENVELOPE</div>
+                    <div id="hrvMean" class="value">--</div>
+                    <div class="log-list" id="bioLogs"></div>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 20px;">
+                <div class="label">TACTICAL TRAINING LOGS</div>
+                <div class="log-list" id="sessionLogs"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function decryptAndInit() {
+            const cipher = document.getElementById('cipherInput').value;
+            const pass = document.getElementById('passInput').value;
+
+            try {
+                const bytes = CryptoJS.AES.decrypt(cipher, pass);
+                const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+                
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                
+                renderDashboard(decrypted);
+            } catch (e) {
+                alert("DECRYPTION FAILED: ACCESS DENIED");
+            }
+        }
+
+        function renderDashboard(data) {
+            document.getElementById('totalSets').innerText = data.training_sets.length;
+            
+            // Render Training Chart
+            const ctx = document.getElementById('volumeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.training_sets.slice(0, 10).map(s => new Date(s.created_at).toLocaleDateString()),
+                    datasets: [{
+                        label: 'VOLUME (KG)',
+                        data: data.training_sets.slice(0, 10).map(s => s.weight_kg * s.reps),
+                        borderColor: '#00C060',
+                        tension: 0.1
+                    }]
+                },
+                options: { 
+                    plugins: { legend: { display: false } }, 
+                    scales: { y: { display: false }, x: { display: false } } 
+                }
+            });
+
+            // Render Session Logs
+            const list = document.getElementById('sessionLogs');
+            data.training_sets.slice(0, 15).forEach(s => {
+                const item = document.createElement('div');
+                item.className = 'log-item';
+                item.innerHTML = `<span>${s.exercise_name.toUpperCase()}</span><span>${s.weight_kg}KG x ${s.reps}</span>`;
+                list.appendChild(item);
+            });
+
+            // Render Bio
+            if (data.biometrics && data.biometrics.length > 0) {
+                 document.getElementById('hrvMean').innerText = data.biometrics[0].value;
+            }
+        }
+    </script>
+</body>
+</html>
